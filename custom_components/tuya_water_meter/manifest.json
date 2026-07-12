@@ -1,7 +1,7 @@
 {
   "domain": "tuya_water_meter",
   "name": "Tuya Water Meter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "documentation": "https://github.com/jordinett/ha-tuya-water-meter",
   "issue_tracker": "https://github.com/jordinett/ha-tuya-water-meter/issues",
   "codeowners": [
@@ -11,5 +11,8 @@
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "requirements": [],
-  "dependencies": []
+  "dependencies": [],
+  "loggers": [
+    "custom_components.tuya_water_meter"
+  ]
 }
