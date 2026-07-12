@@ -1,0 +1,10 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Tuya Water Meter",
+        "description": "Set up the Tuya Water Meter integration."
+      }
+    }
+  }
+}
