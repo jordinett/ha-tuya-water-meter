@@ -26,7 +26,7 @@ class TuyaWaterMeterTestSensor(SensorEntity):
     """Temporary sensor used to verify the integration."""
 
     _attr_has_entity_name = True
-    _attr_name = "Status"
+    _attr_name = "Integration Status"
     _attr_unique_id = "tuya_water_meter_status"
-    _attr_native_value = "Working"
+    _attr_native_value = "Ready"
     _attr_icon = "mdi:water-check"
