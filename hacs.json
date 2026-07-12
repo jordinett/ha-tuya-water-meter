@@ -1,0 +1,8 @@
+{
+  "name": "Tuya Water Meter",
+  "country": [
+    "ALL"
+  ],
+  "homeassistant": "2026.7.0",
+  "render_readme": true
+}
