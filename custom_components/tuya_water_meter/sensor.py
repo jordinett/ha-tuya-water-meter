@@ -13,7 +13,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up sensor platform."""
+    """Set up Tuya Water Meter sensors."""
 
     async_add_entities(
         [
@@ -23,8 +23,10 @@ async def async_setup_entry(
 
 
 class TuyaWaterMeterTestSensor(SensorEntity):
-    """Temporary test sensor."""
+    """Temporary sensor used to verify the integration."""
 
-    _attr_name = "Tuya Water Meter Test"
-    _attr_unique_id = "tuya_water_meter_test"
+    _attr_has_entity_name = True
+    _attr_name = "Status"
+    _attr_unique_id = "tuya_water_meter_status"
     _attr_native_value = "Working"
+    _attr_icon = "mdi:water-check"
