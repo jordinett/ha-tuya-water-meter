@@ -65,7 +65,7 @@ class TuyaWaterMeterConfigFlow(
                     )
 
             except (TuyaCloudApiError, aiohttp.ClientError) as err:
-                self.hass.logger.error(
+                self.hass.logger.exception(
                     "Tuya Cloud setup failed: %s",
                     err,
                 )
