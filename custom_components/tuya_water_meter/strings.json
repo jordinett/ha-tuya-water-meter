@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Tuya Cloud",
+        "description": "Enter the Client ID and Client Secret from your Tuya IoT Cloud project.",
+        "data": {
+          "client_id": "Client ID",
+          "client_secret": "Client Secret"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to Tuya Cloud or authenticate the application."
+    }
+  }
+}
