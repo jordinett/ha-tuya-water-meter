@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import time
+import uuid
 
 import aiohttp
 
@@ -31,6 +32,7 @@ class TuyaCloudApi:
         self._region = region
 
         self._access_token: str | None = None
+        self._refresh_token: str | None = None
         self._uid: str | None = None
 
         self._base_url = self._get_base_url(region)
@@ -48,17 +50,18 @@ class TuyaCloudApi:
 
         return regions.get(region, regions["eu"])
 
-    def _generate_sign(
+    def _generate_token_signature(
         self,
         timestamp: str,
+        nonce: str,
         string_to_sign: str,
     ) -> str:
-        """Generate the Tuya API request signature."""
+        """Generate the Tuya API signature for a token request."""
 
         message = (
             self._client_id
-            + (self._access_token or "")
             + timestamp
+            + nonce
             + string_to_sign
         )
 
@@ -71,11 +74,28 @@ class TuyaCloudApi:
     async def async_get_token(self) -> dict:
         """Get an access token from Tuya Cloud."""
 
-        timestamp = str(int(time.time() * 1000))
+        path = "/v1.0/token?grant_type=1"
 
-        sign = self._generate_sign(
-            timestamp,
-            "",
+        timestamp = str(int(time.time() * 1000))
+        nonce = uuid.uuid4().hex
+
+        # The token request has an empty body.
+        content_sha256 = hashlib.sha256(b"").hexdigest()
+
+        # No custom headers are included in the signature.
+        signed_headers = ""
+
+        string_to_sign = (
+            "GET\n"
+            f"{content_sha256}\n"
+            f"{signed_headers}\n"
+            f"{path}"
+        )
+
+        sign = self._generate_token_signature(
+            timestamp=timestamp,
+            nonce=nonce,
+            string_to_sign=string_to_sign,
         )
 
         headers = {
@@ -83,25 +103,42 @@ class TuyaCloudApi:
             "sign": sign,
             "t": timestamp,
             "sign_method": "HMAC-SHA256",
+            "nonce": nonce,
         }
 
-        url = f"{self._base_url}/v1.0/token"
+        url = f"{self._base_url}{path}"
 
-        async with self._session.get(
-            url,
-            params={"grant_type": "1"},
-            headers=headers,
-        ) as response:
-            data = await response.json()
+        try:
+            async with self._session.get(
+                url,
+                headers=headers,
+            ) as response:
+                data = await response.json()
+
+        except (aiohttp.ClientError, ValueError) as err:
+            raise TuyaCloudApiError(
+                "Unable to connect to Tuya Cloud."
+            ) from err
 
         if not data.get("success"):
-            raise TuyaCloudApiError(
-                data.get("msg", "Unknown Tuya Cloud API error")
+            error_message = data.get(
+                "msg",
+                "Unknown Tuya Cloud API error.",
             )
 
-        result = data["result"]
+            raise TuyaCloudApiError(error_message)
 
-        self._access_token = result["access_token"]
+        result = data.get("result", {})
+
+        access_token = result.get("access_token")
+
+        if not access_token:
+            raise TuyaCloudApiError(
+                "Tuya Cloud did not return an access token."
+            )
+
+        self._access_token = access_token
+        self._refresh_token = result.get("refresh_token")
         self._uid = result.get("uid")
 
         return result
@@ -111,6 +148,12 @@ class TuyaCloudApi:
         """Return the current access token."""
 
         return self._access_token
+
+    @property
+    def refresh_token(self) -> str | None:
+        """Return the current refresh token."""
+
+        return self._refresh_token
 
     @property
     def uid(self) -> str | None:
