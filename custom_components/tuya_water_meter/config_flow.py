@@ -40,7 +40,36 @@ class TuyaWaterMeterConfigFlow(
 
                 token_data = await api.async_get_token()
 
-            except (TuyaCloudApiError, aiohttp.ClientError):
+                uid = token_data.get("uid")
+
+                if not uid:
+                    raise TuyaCloudApiError(
+                        "Tuya Cloud did not return a user ID."
+                    )
+
+                devices = await api.async_get_user_devices(uid)
+
+                self.hass.logger.info(
+                    "Tuya Cloud connection successful. "
+                    "Found %d devices for user %s.",
+                    len(devices),
+                    uid,
+                )
+
+                for device in devices:
+                    self.hass.logger.info(
+                        "Tuya device found: name=%s, id=%s, category=%s",
+                        device.get("name"),
+                        device.get("id"),
+                        device.get("category"),
+                    )
+
+            except (TuyaCloudApiError, aiohttp.ClientError) as err:
+                self.hass.logger.error(
+                    "Tuya Cloud setup failed: %s",
+                    err,
+                )
+
                 errors["base"] = "cannot_connect"
 
             else:
@@ -49,7 +78,7 @@ class TuyaWaterMeterConfigFlow(
                     data={
                         CONF_CLIENT_ID: user_input[CONF_CLIENT_ID],
                         CONF_CLIENT_SECRET: user_input[CONF_CLIENT_SECRET],
-                        "uid": token_data.get("uid"),
+                        "uid": uid,
                     },
                 )
 
