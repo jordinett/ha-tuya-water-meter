@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -19,15 +19,14 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][entry.entry_id]
     entities = []
 
-    # Iterem tots els dispositius detectats per l'API de l'usuari
     for device_id, device_data in coordinator.data.items():
         device_name = device_data.get("name", f"Tuya Device {device_id}")
         status_list = device_data.get("status", [])
 
-        # Creem una entitat per cada codi (DP Code) que té el dispositiu a Tuya Developer
         for status in status_list:
             dp_code = status.get("code")
-            if dp_code:
+            # El "fault" el gestionarem a binary_sensor.py, així que aquí el saltem
+            if dp_code and dp_code != "fault":
                 entities.append(
                     TuyaCloudDynamicSensor(
                         coordinator=coordinator,
@@ -41,7 +40,7 @@ async def async_setup_entry(
 
 
 class TuyaCloudDynamicSensor(CoordinatorEntity, SensorEntity):
-    """Sensor dinàmic que representa un datapoint concret del portal Tuya Developer."""
+    """Sensor dinàmic per a dades globals de Tuya Developer."""
 
     def __init__(self, coordinator, device_id, device_name, dp_code):
         """Initialize the sensor."""
@@ -50,30 +49,39 @@ class TuyaCloudDynamicSensor(CoordinatorEntity, SensorEntity):
         self._device_name = device_name
         self._dp_code = dp_code
 
-        # Propietats bàsiques de l'entitat de Home Assistant
         self._attr_has_entity_name = True
-        self._attr_name = dp_code.replace("_", " ").title()
         self._attr_unique_id = f"tuya_{device_id}_{dp_code}"
+        
+        # Donem un nom més llegible depenent del codi
+        self._attr_name = dp_code.replace("_", " ").title()
 
-        # Assignem icones bàsiques depenent de paraules clau habituals de Tuya
         self._assign_metadata()
 
     def _assign_metadata(self):
-        """Assigna metadades segons el nom de la variable de Tuya."""
-        code_lower = self._dp_code.lower()
-        if "flux" in code_lower or "consumption" in code_lower or "volume" in code_lower:
+        """Assigna metadades (unitats, icones, classes) segons el DP exacte."""
+        
+        if self._dp_code == "water_use_data":
+            self._attr_name = "Total Water Consumption"
+            self._attr_device_class = SensorDeviceClass.WATER
+            self._attr_state_class = SensorStateClass.TOTAL_INCREASING
+            self._attr_native_unit_of_measurement = "m³"
             self._attr_icon = "mdi:water"
-        elif "battery" in code_lower or "residual" in code_lower:
-            self._attr_icon = "mdi:battery"
-            self._attr_native_unit_of_measurement = "%"
-        elif "flow" in code_lower or "speed" in code_lower:
-            self._attr_icon = "mdi:water-speed"
+            
+        elif self._dp_code == "voltage_current":
+            self._attr_name = "Battery Voltage"
+            self._attr_device_class = SensorDeviceClass.VOLTAGE
+            self._attr_state_class = SensorStateClass.MEASUREMENT
+            self._attr_native_unit_of_measurement = "V"
+            
+        elif self._dp_code == "switch_code":
+            self._attr_name = "Valve Status"
+            self._attr_icon = "mdi:pipe-valve"
+            
         else:
             self._attr_icon = "mdi:eye"
 
     @property
     def device_info(self):
-        """Enllaça aquesta entitat a un dispositiu unificat dins de Home Assistant."""
         return {
             "identifiers": {(DOMAIN, self._device_id)},
             "name": self._device_name,
@@ -82,7 +90,6 @@ class TuyaCloudDynamicSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self):
-        """Retorna el valor actual extret de les dades emmagatzemades al coordinator."""
         device_data = self.coordinator.data.get(self._device_id)
         if not device_data:
             return None
@@ -90,5 +97,17 @@ class TuyaCloudDynamicSensor(CoordinatorEntity, SensorEntity):
         status_list = device_data.get("status", [])
         for status in status_list:
             if status.get("code") == self._dp_code:
-                return status.get("value")
+                val = status.get("value")
+                
+                # Apliquem les escales que ens has indicat
+                if val is not None:
+                    try:
+                        if self._dp_code == "water_use_data":
+                            return float(val) / 1000.0
+                        if self._dp_code == "voltage_current":
+                            return float(val) / 100.0
+                    except (ValueError, TypeError):
+                        pass
+                        
+                return val
         return None
