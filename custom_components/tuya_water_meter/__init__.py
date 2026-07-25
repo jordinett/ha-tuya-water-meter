@@ -14,7 +14,7 @@ from .api import TuyaCloudApi, TuyaCloudApiError
 from .const import DOMAIN, CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_REGION, CONF_UID
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS: list[str] = ["sensor"]
+PLATFORMS: list[str] = ["sensor", "binary_sensor"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Tuya Water Meter from a config entry."""
