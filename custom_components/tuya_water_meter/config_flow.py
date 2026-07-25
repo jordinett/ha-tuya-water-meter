@@ -28,8 +28,21 @@ class TuyaWaterMeterConfigFlow(
 
         errors = {}
 
+        if user_input is None:
+            self.hass.logger.warning(
+                "TUYA WATER METER DEBUG: Config flow started."
+            )
+
         if user_input is not None:
+            self.hass.logger.warning(
+                "TUYA WATER METER DEBUG: User submitted credentials."
+            )
+
             try:
+                self.hass.logger.warning(
+                    "TUYA WATER METER DEBUG: Creating API client."
+                )
+
                 session = async_get_clientsession(self.hass)
 
                 api = TuyaCloudApi(
@@ -38,41 +51,66 @@ class TuyaWaterMeterConfigFlow(
                     client_secret=user_input[CONF_CLIENT_SECRET],
                 )
 
+                self.hass.logger.warning(
+                    "TUYA WATER METER DEBUG: API client created."
+                )
+
+                self.hass.logger.warning(
+                    "TUYA WATER METER DEBUG: Requesting token."
+                )
+
                 token_data = await api.async_get_token()
 
+                self.hass.logger.warning(
+                    "TUYA WATER METER DEBUG: Token received."
+                )
+
                 uid = token_data.get("uid")
+
+                self.hass.logger.warning(
+                    "TUYA WATER METER DEBUG: UID received: %s",
+                    uid,
+                )
 
                 if not uid:
                     raise TuyaCloudApiError(
                         "Tuya Cloud did not return a user ID."
                     )
 
+                self.hass.logger.warning(
+                    "TUYA WATER METER DEBUG: Requesting device list."
+                )
+
                 devices = await api.async_get_user_devices(uid)
 
-                self.hass.logger.info(
-                    "Tuya Cloud connection successful. "
-                    "Found %d devices for user %s.",
+                self.hass.logger.warning(
+                    "TUYA WATER METER DEBUG: Device list received. "
+                    "Found %d devices.",
                     len(devices),
-                    uid,
                 )
 
                 for device in devices:
-                    self.hass.logger.info(
-                        "Tuya device found: name=%s, id=%s, category=%s",
+                    self.hass.logger.warning(
+                        "TUYA WATER METER DEBUG: Device found: "
+                        "name=%s, id=%s, category=%s",
                         device.get("name"),
                         device.get("id"),
                         device.get("category"),
                     )
 
-            except (TuyaCloudApiError, aiohttp.ClientError) as err:
+            except Exception as err:
                 self.hass.logger.exception(
-                    "Tuya Cloud setup failed: %s",
+                    "TUYA WATER METER DEBUG: Exception occurred: %s",
                     err,
                 )
 
                 errors["base"] = "cannot_connect"
 
             else:
+                self.hass.logger.warning(
+                    "TUYA WATER METER DEBUG: Creating config entry."
+                )
+
                 return self.async_create_entry(
                     title="Tuya Water Meter",
                     data={
