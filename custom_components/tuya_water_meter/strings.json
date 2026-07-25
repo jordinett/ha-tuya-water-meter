@@ -3,15 +3,17 @@
     "step": {
       "user": {
         "title": "Connect to Tuya Cloud",
-        "description": "Enter the Client ID and Client Secret from your Tuya IoT Cloud project.",
+        "description": "Introdueix les credencials del teu projecte a Tuya IoT Cloud.",
         "data": {
-          "client_id": "Client ID",
-          "client_secret": "Client Secret"
+          "client_id": "Client ID (Access ID)",
+          "client_secret": "Client Secret (Access Secret)",
+          "uid": "User ID (UID de l'App vinculada)",
+          "region": "Regió de l'API Cloud (eu, us, cn, in)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Unable to connect to Tuya Cloud or authenticate the application."
+      "cannot_connect": "No s'ha pogut connectar o autenticar amb Tuya Cloud."
     }
   }
 }
