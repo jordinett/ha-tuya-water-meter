@@ -43,10 +43,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name="Tuya Cloud Developer Devices",
         update_method=async_update_data,
-        update_interval=timedelta(minutes=5),
+        # Canviat de 5 minuts a 1 hora per optimitzar les peticions al cloud
+        update_interval=timedelta(hours=1),
     )
 
-    # Forcem la primera descàrrega de dades abans de carregar les plataformes
+    # Forcem la primera descàrrega de dades en arrencar perquè no s'esperi 1 hora a tenir dades
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})
