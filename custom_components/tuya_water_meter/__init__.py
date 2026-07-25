@@ -28,26 +28,36 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     async def async_update_data():
-        """Actualitza les dades des de l'API de Tuya."""
+        """Actualitza les dades des de l'API de Tuya i filtra per categoria."""
         try:
             # Forcem refresc/obtenció del token i baixem dispositius
             await api.async_get_token()
             devices = await api.async_get_user_devices(entry.data[CONF_UID])
-            # Retornem un diccionari mapejat per ID de dispositiu per agilitzar la cerca
-            return {device["id"]: device for device in devices}
+            
+            # FILTRE CLAU: Només ens quedem amb els dispositius de la categoria "znsb"
+            filtered_devices = {}
+            for device in devices:
+                if device.get("category") == "znsb":
+                    filtered_devices[device["id"]] = device
+                    _LOGGER.debug("Comptador d'aigua trobat: %s", device.get("name"))
+                else:
+                    _LOGGER.debug("Ignorant el dispositiu %s (Categoria: %s)", device.get("name"), device.get("category"))
+                    
+            return filtered_devices
+            
         except TuyaCloudApiError as err:
             raise UpdateFailed(f"Error connectant amb Tuya: {err}")
 
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
-        name="Tuya Cloud Developer Devices",
+        name="Tuya Water Meter Devices (ZNSB)",
         update_method=async_update_data,
-        # Canviat de 5 minuts a 1 hora per optimitzar les peticions al cloud
+        # Interval d'1 hora per optimitzar les peticions al cloud
         update_interval=timedelta(hours=1),
     )
 
-    # Forcem la primera descàrrega de dades en arrencar perquè no s'esperi 1 hora a tenir dades
+    # Forcem la primera descàrrega de dades en arrencar
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})
