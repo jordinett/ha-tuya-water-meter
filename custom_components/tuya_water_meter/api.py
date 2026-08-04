@@ -7,6 +7,7 @@ import hmac
 import time
 import uuid
 import aiohttp
+import json
 
 class TuyaCloudApiError(Exception):
     """Exception raised when the Tuya Cloud API returns an error."""
@@ -116,3 +117,40 @@ class TuyaCloudApi:
             return result
             
         return []
+        
+    async def async_send_command(self, device_id: str, commands: list[dict]) -> bool:
+        """Send commands to a Tuya device (e.g., turn switch on/off)."""
+        if not self._access_token:
+            await self.async_get_token()
+
+        path = f"/v1.0/devices/{device_id}/commands"
+        body_str = json.dumps({"commands": commands})
+        timestamp = str(int(time.time() * 1000))
+        nonce = uuid.uuid4().hex
+        
+        # En les peticions POST de Tuya, el body s'ha de hashejar per a la firma
+        content_sha256 = hashlib.sha256(body_str.encode("utf-8")).hexdigest()
+        string_to_sign = f"POST\n{content_sha256}\n\n{path}"
+        sign = self._generate_api_signature(timestamp, nonce, string_to_sign)
+
+        headers = {
+            "client_id": self._client_id,
+            "access_token": self._access_token,
+            "sign": sign,
+            "t": timestamp,
+            "sign_method": "HMAC-SHA256",
+            "nonce": nonce,
+            "Content-Type": "application/json",
+        }
+
+        try:
+            async with self._session.post(f"{self._base_url}{path}", headers=headers, data=body_str) as response:
+                data = await response.json()
+        except Exception as err:
+            raise TuyaCloudApiError("Error de connexió en enviar la comanda.") from err
+
+        if not data.get("success"):
+            _LOGGER.error("Tuya API Error enviant comanda: %s", data.get("msg"))
+            return False
+
+        return True
