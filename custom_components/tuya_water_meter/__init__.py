@@ -57,7 +57,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         update_interval=timedelta(hours=1),
     )
   
-    # 👉 AFEGEIX AQUESTA LÍNIA: Guardem l'API dins del coordinator perquè el switch.py hi tingui accés
+    # Guardem l'API dins del coordinator perquè el switch.py hi tingui accés
     coordinator.api = api
 
     # Forcem la primera descàrrega de dades en arrencar
