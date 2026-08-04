@@ -25,8 +25,8 @@ async def async_setup_entry(
 
         for status in status_list:
             dp_code = status.get("code")
-            # El "fault" el gestionarem a binary_sensor.py, així que aquí el saltem
-            if dp_code and dp_code != "fault":
+            # CORRECCIÓ: Ignorem tant el 'fault' (va a binary_sensor) com el 'switch_code' (va a switch)
+            if dp_code and dp_code not in ("fault", "switch_code"):
                 entities.append(
                     TuyaCloudDynamicSensor(
                         coordinator=coordinator,
@@ -73,9 +73,7 @@ class TuyaCloudDynamicSensor(CoordinatorEntity, SensorEntity):
             self._attr_state_class = SensorStateClass.MEASUREMENT
             self._attr_native_unit_of_measurement = "V"
             
-        elif self._dp_code == "switch_code":
-            self._attr_name = "Valve Status"
-            self._attr_icon = "mdi:pipe-valve"
+        # CORRECCIÓ: S'ha eliminat l'apartat de switch_code perquè ja no és un sensor
             
         else:
             self._attr_icon = "mdi:eye"
