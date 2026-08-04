@@ -1,4 +1,4 @@
-  """The Tuya Water Meter integration."""
+"""The Tuya Water Meter integration."""
 
 from __future__ import annotations
 
