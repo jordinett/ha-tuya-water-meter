@@ -18,7 +18,7 @@ You will need your Tuya IoT Platform credentials:
 3. **Account UID** (Found under *Cloud > Development > Your Project > Link Tuya App*)
 4. **API Region** (e.g., `eu` for Europe)
 
-Changelog:
+## Changelog
 
 Version 1.0.0: it is only a read only integration, it reads total water consumption and all the rest of the sensors and alarms
 
