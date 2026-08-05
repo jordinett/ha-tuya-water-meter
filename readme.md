@@ -27,3 +27,5 @@ You will need your Tuya IoT Platform credentials. You also need to enter and sig
 Version 1.0.0: it is only a read only integration, it reads total water consumption and all the rest of the sensors and alarms.
 
 Version: 1.1.0: Valve state becomes a switch, in version 1.0.0 you could only read the valve state (true or false - valve opened or closed) in this version you can open and close the valve directly from the integration.
+
+Version: 1.2.0: There are no changes to the previous versions just minor adjustments to the requirements to publish the integration in HACS.
