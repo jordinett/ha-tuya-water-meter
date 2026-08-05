@@ -17,3 +17,9 @@ You will need your Tuya IoT Platform credentials:
 2. **Client Secret** (Access Secret)
 3. **Account UID** (Found under *Cloud > Development > Your Project > Link Tuya App*)
 4. **API Region** (e.g., `eu` for Europe)
+
+Changelog:
+
+Version 1.0.0: it is only a read only integration, it reads total water consumption and all the rest of the sensors and alarms
+
+Version: 1.1.0: Valve state becomes a switch, in version 1.0.0 you could only read the valve state (true or false - valve opened or closed) in this version you can open and close the valve directly from the integration.
