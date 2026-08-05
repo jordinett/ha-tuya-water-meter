@@ -2,7 +2,7 @@
 
 Custom integration for Home Assistant to fetch water meter data directly from the **Tuya Developer Cloud API**. 
 
-⚠️ **IMPORTANT: This integration is strictly specific to Tuya Water Meters under the `znsb` category** (e.g., Zigbee valve-controlled ultrasonic water meters with Product ID `vuwtqx0t`). It will completely ignore any other Tuya devices (lights, switches, etc.) to avoid conflicts with the official Tuya integration or Local Tuya.
+**IMPORTANT: This integration is strictly specific to Tuya Water Meters under the `znsb` category** (e.g., Zigbee valve-controlled ultrasonic water meters with Product ID `vuwtqx0t`). It will completely ignore any other Tuya devices (lights, switches, etc.) to avoid conflicts with the official Tuya integration or Local Tuya.
 
 This integration has been tested using an Ultrasonic Zigbee ZPmeter model 214C-ZG-20 DN20.
 
