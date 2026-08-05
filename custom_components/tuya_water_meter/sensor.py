@@ -10,6 +10,8 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 
+EXCLUDED_DP_CODES = ("fault", "switch_code", "valve_status", "switch", "switch_1")
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -25,8 +27,7 @@ async def async_setup_entry(
 
         for status in status_list:
             dp_code = status.get("code")
-            # CORRECCIÓ: Ignorem tant el 'fault' (va a binary_sensor) com el 'switch_code' (va a switch)
-            if dp_code and dp_code not in ("fault", "switch_code"):
+            if dp_code and dp_code not in EXCLUDED_DP_CODES:
                 entities.append(
                     TuyaCloudDynamicSensor(
                         coordinator=coordinator,
@@ -51,15 +52,12 @@ class TuyaCloudDynamicSensor(CoordinatorEntity, SensorEntity):
 
         self._attr_has_entity_name = True
         self._attr_unique_id = f"tuya_{device_id}_{dp_code}"
-        
-        # Donem un nom més llegible depenent del codi
         self._attr_name = dp_code.replace("_", " ").title()
 
         self._assign_metadata()
 
     def _assign_metadata(self):
         """Assigna metadades (unitats, icones, classes) segons el DP exacte."""
-        
         if self._dp_code == "water_use_data":
             self._attr_name = "Total Water Consumption"
             self._attr_device_class = SensorDeviceClass.WATER
@@ -72,8 +70,6 @@ class TuyaCloudDynamicSensor(CoordinatorEntity, SensorEntity):
             self._attr_device_class = SensorDeviceClass.VOLTAGE
             self._attr_state_class = SensorStateClass.MEASUREMENT
             self._attr_native_unit_of_measurement = "V"
-            
-        # CORRECCIÓ: S'ha eliminat l'apartat de switch_code perquè ja no és un sensor
             
         else:
             self._attr_icon = "mdi:eye"
@@ -96,8 +92,6 @@ class TuyaCloudDynamicSensor(CoordinatorEntity, SensorEntity):
         for status in status_list:
             if status.get("code") == self._dp_code:
                 val = status.get("value")
-                
-                # Apliquem les escales que ens has indicat
                 if val is not None:
                     try:
                         if self._dp_code == "water_use_data":
@@ -106,6 +100,5 @@ class TuyaCloudDynamicSensor(CoordinatorEntity, SensorEntity):
                             return float(val) / 100.0
                     except (ValueError, TypeError):
                         pass
-                        
                 return val
         return None
