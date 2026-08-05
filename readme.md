@@ -10,9 +10,11 @@ Custom integration for Home Assistant to fetch water meter data directly from th
 - **Battery Status:** Exposes the battery voltage formatted in Volts ($V$).
 - **Advanced Diagnostics:** Splits the Tuya `fault` bitmap into **14 independent binary sensors** (Low battery alarm, leakage, low temperature, overflow, tamper, etc.).
 - **Optimized Polling:** Requests data once every hour to match the device's typical 12-hour sleeping cycle, preventing Tuya API rate-limiting issues.
+- **Valve state switch:** You can open and close the valve directly from home assistant through the Tuya Cloud
 
 ## Setup Requirements
-You will need your Tuya IoT Platform credentials:
+You will need your Tuya IoT Platform credentials. You also need to enter and signup to Tuya Developers Portal, create a project and integrate your Tuya account there, you need to have your devices visible in the project in Tuya developers portal in order to work. In order to log in to this integration in home assistant you need:
+
 1. **Client ID** (Access ID)
 2. **Client Secret** (Access Secret)
 3. **Account UID** (Found under *Cloud > Development > Your Project > Link Tuya App*)
