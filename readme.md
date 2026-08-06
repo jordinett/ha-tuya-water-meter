@@ -1,5 +1,7 @@
 # Tuya Water Meter (ZNSB Category) for Home Assistant
 
+Some Tuya Water meters are visible but unsuported from official Tuya Integration for Home Assistant. This custom integration solves this problem and you can create all entities and control the valve remotely.
+
 Custom integration for Home Assistant to fetch water meter data directly from the **Tuya Developer Cloud API**. 
 
 **IMPORTANT: This integration is strictly specific to Tuya Water Meters under the `znsb` category** (e.g., Zigbee valve-controlled ultrasonic water meters with Product ID `vuwtqx0t`). It will completely ignore any other Tuya devices (lights, switches, etc.) to avoid conflicts with the official Tuya integration or Local Tuya.
